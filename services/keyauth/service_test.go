@@ -10,6 +10,9 @@ import (
 )
 
 func TestService(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skip integration test")
+	}
 	suite.Run(t, new(ServiceTestSuite))
 }
 
