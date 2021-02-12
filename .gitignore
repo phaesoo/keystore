@@ -17,3 +17,4 @@ vendor/
 # Custom
 db/mysql/data
 db/redis/data
+main

@@ -11,6 +11,7 @@ import (
 	"github.com/phaesoo/shield/pkg/db"
 	"github.com/phaesoo/shield/pkg/memdb"
 	"github.com/phaesoo/shield/pkg/server"
+	"github.com/phaesoo/shield/services/keyauth"
 )
 
 type Shield struct {
@@ -34,22 +35,25 @@ func NewApp(config configs.Config) *Shield {
 	return server
 }
 
-func (m *Shield) setupServices() {
-	mc := m.config.Mysql
-	_, err := db.NewDB("mysql", db.DSN(mc.User, mc.Password, mc.Database, mc.Host, mc.Port))
+func (app *Shield) setupServices() {
+	mc := app.config.Mysql
+	db, err := db.NewDB("mysql", db.DSN(mc.User, mc.Password, mc.Database, mc.Host, mc.Port))
 	if err != nil {
 		panic(err)
 	}
 
-	rc := m.config.Redis
+	rc := app.config.Redis
 	pool := memdb.NewPool(rc.Address(), rc.Database)
 	_ = store.NewStore(pool)
 	_ = mq.NewRedisMQ(pool)
 
 	// Register routes
+	keyauthService := keyauth.NewService(db)
+	keyauth := keyauth.NewServer(keyauthService)
+	keyauth.RegisterRoutes(app.server.Router())
 }
 
-func (m *Shield) processEvents(handler func(ctx context.Context) error) {
+func (app *Shield) processEvents(handler func(ctx context.Context) error) {
 	log.Print("Start to process events")
 	for {
 		handler(context.Background())
@@ -59,13 +63,13 @@ func (m *Shield) processEvents(handler func(ctx context.Context) error) {
 }
 
 // Listen starts server on the address
-func (m *Shield) Listen() error {
-	return m.server.Listen()
+func (app *Shield) Listen() error {
+	return app.server.Listen()
 }
 
 // Shutdown server
-func (m *Shield) Shutdown() error {
-	if err := m.server.Shutdown(); err != nil {
+func (app *Shield) Shutdown() error {
+	if err := app.server.Shutdown(); err != nil {
 		return err
 	}
 	return nil
