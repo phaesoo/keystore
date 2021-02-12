@@ -1,0 +1,19 @@
+app:
+  host: 0.0.0.0
+  port: 10080
+  profile: false # Enable pprof endpoints
+  metrics: false # Enable expvar metrics at GET /debug/vars
+
+mysql:
+  host: 0.0.0.0
+  port: 3306
+  database: shield
+  user: shield-user
+  password: shield-passwd
+  logging: true
+
+redis:
+  host: 0.0.0.0
+  port: 6379
+  database: 0
+  logging: true
