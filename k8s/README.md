@@ -1,0 +1,1 @@
+Local declarative configuration for Shield purpose of testing.

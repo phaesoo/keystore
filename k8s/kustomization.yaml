@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ingress.yaml
+- deployment.yaml
+- mysql-deployment.yaml
+- redis-deployment.yaml
+
+configMapGenerator:
+- name: shield-config
+  env: config.env
+- name: mysql-init
+  files:
+  - mysql-init.sql

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shield
+  labels:
+    app.kubernetes.io/name: shield
+spec:
+  ports:
+  - port: 10080
+  selector:
+    app.kubernetes.io/name: shield
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shield
+  labels:
+    app.kubernetes.io/name: shield
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: shield
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: shield
+    spec:
+      containers:
+        - name: shield
+          image: phaesoo/shield
+          envFrom:
+          - configMapRef:
+              name: shield-config
