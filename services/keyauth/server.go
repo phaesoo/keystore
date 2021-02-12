@@ -30,7 +30,7 @@ func (s *Server) RegisterRoutes(router *chi.Mux) {
 func (s *Server) HandlePostVerify(w http.ResponseWriter, r *http.Request) {
 	log.Print("HandlePostVerify called")
 
-	if err := s.service.Verify(context.Background()); err != nil {
+	if err := s.service.Verify(context.Background(), "", "", ""); err != nil {
 		resp.Error(w, err, "")
 		return
 	}
