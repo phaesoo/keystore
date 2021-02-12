@@ -10,6 +10,10 @@ import (
 )
 
 func Test_RedisMQ(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skip integration test")
+	}
+
 	pool := memdb.NewPool("0.0.0.0:6379", 1)
 	defer pool.Close()
 

@@ -3,5 +3,4 @@ go:
 - 1.15.x
 install:
   - make deps
-cache: pip
 script: make test
