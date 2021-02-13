@@ -9,6 +9,7 @@ type db struct {
 type Store interface {
 	commonStore
 	masterStore
+	pathPermStore
 }
 
 // NewStore returns db implements Store interface

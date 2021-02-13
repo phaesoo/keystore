@@ -5,38 +5,38 @@ GRANT ALL PRIVILEGES ON `shield`.* TO `shield-user`@`%`;
 USE shield;
 
 
-CREATE TABLE `key_user` (
+CREATE TABLE `auth_key` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `access_key` VARCHAR(63) UNIQUE,
     `secret_key` VARCHAR(63) UNIQUE,
-    `user_uuid` VARCHAR(32) UNIQUE,
+    `user_uuid` VARCHAR(32) UNIQUE
 ) ENGINE=INNODB;
 
 
-CREATE TABLE `permission` (
+CREATE TABLE `path_permission` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
-    `path` VARCHAR(63) UNIQUE,
-)
+    `path_pattern` VARCHAR(63) UNIQUE
+) ENGINE=INNODB;
 
-CREATE TABLE `key_permission` (
-    `key_id` INT
-    `perm_id` INT
-    FOREIGN KEY(`key_id`) REFERENCES `key_user`(`id`)
-    FOREIGN KEY(`perm_id`) REFERENCES `permission`(`id`)
+CREATE TABLE `auth_key_path_permissions` (
+    `key_id` INT,
+    `perm_id` INT,
+    FOREIGN KEY(`key_id`) REFERENCES `auth_key`(`id`),
+    FOREIGN KEY(`perm_id`) REFERENCES `path_permission`(`id`)
 ) ENGINE=INNODB;
 
 
-INSERT INTO key_user (id, access_key, secret_key, user_uuid)
+INSERT INTO auth_key (access_key, secret_key, user_uuid)
 VALUES
-(0, "123", "456", "user1"),
-(1, "789", "012", "user2");
+("123", "456", "user1"),
+("789", "012", "user2");
 
 
-INSERT INTO permission (id, path)
+INSERT INTO path_permission (path_pattern)
 VALUES
-(0, "/markets/all");
+("/markets/all");
 
 
-INSERT INTO key_permission (key_id, perm_id)
+INSERT INTO auth_key_path_permissions (key_id, perm_id)
 VALUES
-(0, 0);
+(1, 1);

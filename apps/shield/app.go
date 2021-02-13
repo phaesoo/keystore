@@ -44,11 +44,14 @@ func (app *Shield) setupServices() {
 
 	rc := app.config.Redis
 	pool := memdb.NewPool(rc.Address(), rc.Database)
-	_ = store.NewStore(pool)
+	store := store.NewStore(pool)
 	_ = mq.NewRedisMQ(pool)
 
 	// Register routes
-	keyauthService := keyauth.NewService(db)
+	keyauthService := keyauth.NewService(store, db)
+	if err := keyauthService.Initialize(context.Background()); err != nil {
+		panic(err)
+	}
 	keyauth := keyauth.NewServer(keyauthService)
 	keyauth.RegisterRoutes(app.server.Router())
 }
