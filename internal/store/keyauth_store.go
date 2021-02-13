@@ -14,6 +14,8 @@ const (
 )
 
 type keyauthStore interface {
+	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
+	SetAuthKey(ctx context.Context, authKey models.AuthKey) error
 	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
 	RefreshPathPermissions(ctx context.Context, perms []models.PathPermission) error
 }

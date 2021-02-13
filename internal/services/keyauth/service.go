@@ -7,12 +7,15 @@ import (
 
 	"github.com/gobwas/glob"
 	"github.com/phaesoo/shield/internal/models"
+	"github.com/phaesoo/shield/internal/store"
 	"github.com/phaesoo/shield/pkg/db"
 	"github.com/pkg/errors"
 	"github.com/square/go-jose"
 )
 
 type serviceStore interface {
+	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
+	SetAuthKey(ctx context.Context, authKey models.AuthKey) error
 	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
 	RefreshPathPermissions(ctx context.Context, perms []models.PathPermission) error
 }
@@ -66,6 +69,25 @@ func (s *Service) Initialize(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) findAuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
+	var authKey models.AuthKey
+	var err error
+	authKey, err = s.store.AuthKey(ctx, accessKey)
+	if err != nil {
+		if err != store.ErrNotFound {
+			return authKey, err
+		}
+		authKey, err = s.repo.AuthKey(ctx, accessKey)
+		if err != nil {
+			return authKey, err
+		}
+		if err := s.store.SetAuthKey(ctx, authKey); err != nil {
+			return authKey, err
+		}
+	}
+	return authKey, nil
+}
+
 func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) error {
 	signed, err := jose.ParseSigned(token)
 	if err != nil {
@@ -83,12 +105,12 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 		return err
 	}
 
-	// TODO: Validate query with signature
-
-	authKey, err := s.repo.AuthKey(ctx, payload.AccessKey)
+	authKey, err := s.findAuthKey(ctx, payload.AccessKey)
 	if err != nil {
 		return err
 	}
+
+	// TODO: Validate query with signature
 
 	_, err = signed.Verify([]byte(authKey.SecretKey))
 	if err != nil {
