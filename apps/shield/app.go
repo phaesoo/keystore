@@ -7,11 +7,11 @@ import (
 
 	"github.com/phaesoo/shield/configs"
 	"github.com/phaesoo/shield/internal/mq"
+	"github.com/phaesoo/shield/internal/services/keyauth"
 	"github.com/phaesoo/shield/internal/store"
 	"github.com/phaesoo/shield/pkg/db"
 	"github.com/phaesoo/shield/pkg/memdb"
 	"github.com/phaesoo/shield/pkg/server"
-	"github.com/phaesoo/shield/services/keyauth"
 )
 
 type Shield struct {

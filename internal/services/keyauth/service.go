@@ -3,23 +3,28 @@ package keyauth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/gobwas/glob"
-	"github.com/phaesoo/shield/internal/store"
+	"github.com/phaesoo/shield/internal/models"
 	"github.com/phaesoo/shield/pkg/db"
 	"github.com/pkg/errors"
 	"github.com/square/go-jose"
 )
 
 type serviceStore interface {
-	PathPermission(ctx context.Context, id int) (store.PathPermission, error)
-	RefreshPathPermissions(ctx context.Context, perms []store.PathPermission) error
+	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
+	RefreshPathPermissions(ctx context.Context, perms []models.PathPermission) error
+}
+
+type serviceRepo interface {
+	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
+	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
 }
 
 type Service struct {
 	store serviceStore
+	repo  serviceRepo
 	db    *db.DB
 }
 
@@ -31,7 +36,7 @@ func NewService(store serviceStore, db *db.DB) *Service {
 }
 
 func (s *Service) Initialize(ctx context.Context) error {
-	perms := []store.PathPermission{}
+	perms := []models.PathPermission{}
 
 	rows, err := s.db.Queryx(`SELECT id, path_pattern FROM path_permission`)
 	if err != nil {
@@ -48,7 +53,7 @@ func (s *Service) Initialize(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		perms = append(perms, store.PathPermission{
+		perms = append(perms, models.PathPermission{
 			ID:          perm.ID,
 			PathPattern: perm.PathPattern,
 		})
@@ -61,14 +66,14 @@ func (s *Service) Initialize(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) Verify(ctx context.Context, tokenString, urlPath, rawQuery string) error {
-	token, err := jose.ParseSigned(tokenString)
+func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) error {
+	signed, err := jose.ParseSigned(token)
 	if err != nil {
 		return err
 	}
 
 	// Decode JWT token without verifying the signature
-	b := token.UnsafePayloadWithoutVerification()
+	b := signed.UnsafePayloadWithoutVerification()
 	payload := struct {
 		AccessKey string `json:"access_key"`
 		Nonce     string `json:"nonce"`
@@ -80,33 +85,19 @@ func (s *Service) Verify(ctx context.Context, tokenString, urlPath, rawQuery str
 
 	// TODO: Validate query with signature
 
-	authKey := struct {
-		ID        int    `db:"id"`
-		SecretKey string `db:"secret_key"`
-		UserUUID  string `db:"user_uuid"`
-	}{}
-
-	if err := s.db.Get(&authKey, fmt.Sprintf(`
-		SELECT id, secret_key, user_uuid
-		FROM auth_key
-		WHERE access_key = %s
-		`, payload.AccessKey)); err != nil {
+	authKey, err := s.repo.AuthKey(ctx, payload.AccessKey)
+	if err != nil {
 		return err
 	}
 
-	_, err = token.Verify([]byte(authKey.SecretKey))
+	_, err = signed.Verify([]byte(authKey.SecretKey))
 	if err != nil {
 		log.Print("Verification failed")
 		return err
 	}
 
-	permIDs := []int{}
-	if err := s.db.Select(&permIDs, fmt.Sprintf(`
-		SELECT B.permission_id
-		FROM auth_key A
-		JOIN auth_key_path_permissions B on A.id = B.key_id
-		WHERE A.id = %d
-		`, authKey.ID)); err != nil {
+	permIDs, err := s.repo.PathPermissionIDs(ctx, authKey.ID)
+	if err != nil {
 		return err
 	}
 
@@ -115,12 +106,10 @@ func (s *Service) Verify(ctx context.Context, tokenString, urlPath, rawQuery str
 		if err != nil {
 			return err
 		}
-
 		g, err := glob.Compile(perm.PathPattern, '/')
 		if err != nil {
 			return err
 		}
-
 		if g.Match(urlPath) {
 			return nil
 		}
