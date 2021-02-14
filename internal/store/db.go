@@ -8,7 +8,6 @@ type db struct {
 
 type Store interface {
 	commonStore
-	masterStore
 	keyauthStore
 }
 
