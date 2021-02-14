@@ -40,11 +40,7 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 
 	// Decode JWT token without verifying the signature
 	b := signed.UnsafePayloadWithoutVerification()
-	payload := struct {
-		AccessKey string `json:"access_key"`
-		Nonce     string `json:"nonce"`
-		Signature string `json:"signature"`
-	}{}
+	var payload models.Payload
 	if err := json.Unmarshal(b, &payload); err != nil {
 		return err
 	}
@@ -81,5 +77,5 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 		}
 	}
 
-	return errors.Wrap(err, "url not allowed")
+	return errors.Wrap(err, "Url path not allowed")
 }
