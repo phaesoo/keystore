@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/phaesoo/shield/configs"
-	"github.com/phaesoo/shield/pkg/db"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -22,12 +20,12 @@ type ServiceTestSuite struct {
 }
 
 func (s *ServiceTestSuite) SetupSuite() {
-	var mc configs.MysqlConfig = configs.Get().Mysql
-	db, err := db.NewDB("mysql", db.DSN(mc.User, mc.Password, mc.Database, mc.Host, mc.Port))
-	if err != nil {
-		s.NoError(err)
-	}
-	s.service = &Service{db: db}
+	// var mc configs.MysqlConfig = configs.Get().Mysql
+	// db, err := db.NewDB("mysql", db.DSN(mc.User, mc.Password, mc.Database, mc.Host, mc.Port))
+	// if err != nil {
+	// 	s.NoError(err)
+	// }
+	// s.service = &Service{db: db}
 }
 
 func (s *ServiceTestSuite) TearDownSuite() {

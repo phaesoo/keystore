@@ -9,7 +9,6 @@ import (
 	"github.com/phaesoo/shield/internal/mq"
 	"github.com/phaesoo/shield/internal/repo"
 	"github.com/phaesoo/shield/internal/services/keyauth"
-	"github.com/phaesoo/shield/internal/store"
 	"github.com/phaesoo/shield/pkg/db"
 	"github.com/phaesoo/shield/pkg/memdb"
 	"github.com/phaesoo/shield/pkg/server"
@@ -45,12 +44,11 @@ func (app *Shield) setupServices() {
 
 	rc := app.config.Redis
 	pool := memdb.NewPool(rc.Address(), rc.Database)
-	store := store.NewStore(pool)
-	repo := repo.NewRepo(db)
+	repo := repo.NewRepo(db, pool)
 	_ = mq.NewRedisMQ(pool)
 
 	// Register routes
-	keyauthService := keyauth.NewService(repo, store, db)
+	keyauthService := keyauth.NewService(repo)
 	if err := keyauthService.Initialize(context.Background()); err != nil {
 		panic(err)
 	}

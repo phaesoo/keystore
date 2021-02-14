@@ -7,67 +7,33 @@ import (
 
 	"github.com/gobwas/glob"
 	"github.com/phaesoo/shield/internal/models"
-	"github.com/phaesoo/shield/internal/store"
-	"github.com/phaesoo/shield/pkg/db"
 	"github.com/pkg/errors"
 	"github.com/square/go-jose"
 )
 
-type serviceStore interface {
-	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
-	SetAuthKey(ctx context.Context, authKey models.AuthKey) error
-	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
-	RefreshPathPermissions(ctx context.Context, perms []models.PathPermission) error
-}
-
 type serviceRepo interface {
 	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
+	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
 	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
-	PathPermissions(ctx context.Context) ([]models.PathPermission, error)
+	RefreshPathPermissions(ctx context.Context) error
 }
 
 type Service struct {
-	repo  serviceRepo
-	store serviceStore
+	repo serviceRepo
 }
 
-func NewService(repo serviceRepo, store serviceStore, db *db.DB) *Service {
+func NewService(repo serviceRepo) *Service {
 	return &Service{
-		repo:  repo,
-		store: store,
+		repo: repo,
 	}
 }
 
 func (s *Service) Initialize(ctx context.Context) error {
-	perms, err := s.repo.PathPermissions(ctx)
-	if err != nil {
-		return err
-	}
-
-	if err := s.store.RefreshPathPermissions(context.Background(), perms); err != nil {
+	if err := s.repo.RefreshPathPermissions(context.Background()); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (s *Service) findAuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
-	var authKey models.AuthKey
-	var err error
-	authKey, err = s.store.AuthKey(ctx, accessKey)
-	if err != nil {
-		if err != store.ErrNotFound {
-			return authKey, err
-		}
-		authKey, err = s.repo.AuthKey(ctx, accessKey)
-		if err != nil {
-			return authKey, err
-		}
-		if err := s.store.SetAuthKey(ctx, authKey); err != nil {
-			return authKey, err
-		}
-	}
-	return authKey, nil
 }
 
 func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) error {
@@ -87,7 +53,7 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 		return err
 	}
 
-	authKey, err := s.findAuthKey(ctx, payload.AccessKey)
+	authKey, err := s.repo.AuthKey(ctx, payload.AccessKey)
 	if err != nil {
 		return err
 	}
@@ -106,7 +72,7 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 	}
 
 	for _, id := range permIDs {
-		perm, err := s.store.PathPermission(context.Background(), id)
+		perm, err := s.repo.PathPermission(context.Background(), id)
 		if err != nil {
 			return err
 		}

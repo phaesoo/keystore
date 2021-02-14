@@ -1,4 +1,4 @@
-package repo
+package db
 
 import (
 	"context"
@@ -7,13 +7,7 @@ import (
 	"github.com/phaesoo/shield/internal/models"
 )
 
-type keyauthRepo interface {
-	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
-	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
-	PathPermissions(ctx context.Context) ([]models.PathPermission, error)
-}
-
-func (db *db) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
+func (db *DB) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
 	k := struct {
 		ID        int    `db:"id"`
 		AccessKey string `db:"access_key"`
@@ -36,21 +30,7 @@ func (db *db) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, er
 		UserUUID:  k.UserUUID,
 	}, nil
 }
-
-func (db *db) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
-	var output []int
-	if err := db.conn.Select(&output, fmt.Sprintf(`
-		SELECT B.permission_id
-		FROM auth_key A
-		JOIN auth_key_path_permissions B on A.id = B.key_id
-		WHERE A.id = %d
-		`, keyID)); err != nil {
-		return output, err
-	}
-	return output, nil
-}
-
-func (db *db) PathPermissions(ctx context.Context) ([]models.PathPermission, error) {
+func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, error) {
 	perms := []models.PathPermission{}
 
 	rows, err := db.conn.Queryx(`SELECT id, path_pattern FROM path_permission`)
@@ -74,4 +54,17 @@ func (db *db) PathPermissions(ctx context.Context) ([]models.PathPermission, err
 		})
 	}
 	return perms, nil
+}
+
+func (db *DB) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
+	var output []int
+	if err := db.conn.Select(&output, fmt.Sprintf(`
+		SELECT B.permission_id
+		FROM auth_key A
+		JOIN auth_key_path_permissions B on A.id = B.key_id
+		WHERE A.id = %d
+		`, keyID)); err != nil {
+		return output, err
+	}
+	return output, nil
 }
