@@ -9,6 +9,7 @@ type db struct {
 }
 
 type Repo interface {
+	keyauthRepo
 }
 
 // NewRepo returns db implements Repo interface

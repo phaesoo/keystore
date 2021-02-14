@@ -8,7 +8,9 @@ import (
 )
 
 type keyauthRepo interface {
-	PathPermissionIDs(ctx context.Context, id int) (models.PathPermission, error)
+	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
+	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
+	PathPermissions(ctx context.Context) ([]models.PathPermission, error)
 }
 
 func (db *db) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
@@ -46,4 +48,30 @@ func (db *db) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
 		return output, err
 	}
 	return output, nil
+}
+
+func (db *db) PathPermissions(ctx context.Context) ([]models.PathPermission, error) {
+	perms := []models.PathPermission{}
+
+	rows, err := db.conn.Queryx(`SELECT id, path_pattern FROM path_permission`)
+	if err != nil {
+		return perms, err
+	}
+
+	for rows.Next() {
+		perm := struct {
+			ID          int    `db:"id"`
+			PathPattern string `db:"path_pattern"`
+		}{}
+
+		err = rows.StructScan(&perm)
+		if err != nil {
+			return perms, err
+		}
+		perms = append(perms, models.PathPermission{
+			ID:          perm.ID,
+			PathPattern: perm.PathPattern,
+		})
+	}
+	return perms, nil
 }

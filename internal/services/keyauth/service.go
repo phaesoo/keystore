@@ -23,43 +23,25 @@ type serviceStore interface {
 type serviceRepo interface {
 	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
 	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
+	PathPermissions(ctx context.Context) ([]models.PathPermission, error)
 }
 
 type Service struct {
-	store serviceStore
 	repo  serviceRepo
-	db    *db.DB
+	store serviceStore
 }
 
-func NewService(store serviceStore, db *db.DB) *Service {
+func NewService(repo serviceRepo, store serviceStore, db *db.DB) *Service {
 	return &Service{
+		repo:  repo,
 		store: store,
-		db:    db,
 	}
 }
 
 func (s *Service) Initialize(ctx context.Context) error {
-	perms := []models.PathPermission{}
-
-	rows, err := s.db.Queryx(`SELECT id, path_pattern FROM path_permission`)
+	perms, err := s.repo.PathPermissions(ctx)
 	if err != nil {
 		return err
-	}
-
-	for rows.Next() {
-		perm := struct {
-			ID          int    `db:"id"`
-			PathPattern string `db:"path_pattern"`
-		}{}
-
-		err = rows.StructScan(&perm)
-		if err != nil {
-			return err
-		}
-		perms = append(perms, models.PathPermission{
-			ID:          perm.ID,
-			PathPattern: perm.PathPattern,
-		})
 	}
 
 	if err := s.store.RefreshPathPermissions(context.Background(), perms); err != nil {
