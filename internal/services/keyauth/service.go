@@ -29,11 +29,7 @@ func NewService(repo serviceRepo) *Service {
 }
 
 func (s *Service) Initialize(ctx context.Context) error {
-	if err := s.repo.RefreshPathPermissions(context.Background()); err != nil {
-		return err
-	}
-
-	return nil
+	return s.repo.RefreshPathPermissions(ctx)
 }
 
 func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) error {
@@ -72,7 +68,7 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) e
 	}
 
 	for _, id := range permIDs {
-		perm, err := s.repo.PathPermission(context.Background(), id)
+		perm, err := s.repo.PathPermission(ctx, id)
 		if err != nil {
 			return err
 		}
