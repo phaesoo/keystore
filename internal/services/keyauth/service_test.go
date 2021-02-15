@@ -14,16 +14,14 @@ import (
 func TestService_Verify(t *testing.T) {
 	expectedUserUUID := "uuid-1"
 	expectedPattern := "/markets/all"
+	queryString := "arg1=1&arg2=test"
 
 	t.Run("It runs without error and returns expected user uuid", func(t *testing.T) {
 		accessKey := uuid.NewString()
 		secretKey := uuid.NewString()
 
-		payload := models.Payload{
-			AccessKey: accessKey,
-			Nonce:     uuid.NewString(),
-			Signature: "1",
-		}
+		payload, err := models.NewPayload(accessKey, uuid.NewString(), queryString)
+		assert.NoError(t, err)
 		token, err := payload.Encrypt(secretKey)
 		assert.NoError(t, err)
 
@@ -56,9 +54,27 @@ func TestService_Verify(t *testing.T) {
 
 		service := NewService(repo)
 
-		userUUID, err := service.Verify(context.Background(), token, expectedPattern, "1")
+		userUUID, err := service.Verify(context.Background(), token, expectedPattern, queryString)
 		assert.Equal(t, expectedUserUUID, userUUID)
 		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+	t.Run("It returns error if query string has been modified", func(t *testing.T) {
+		accessKey := uuid.NewString()
+		secretKey := uuid.NewString()
+		modifiedQueryString := "arg2=1&arg2=test"
+
+		payload, err := models.NewPayload(accessKey, uuid.NewString(), queryString)
+		token, err := payload.Encrypt(secretKey)
+		assert.NoError(t, err)
+
+		repo := mockrepo.NewMockRepo()
+
+		service := NewService(repo)
+
+		userUUID, err := service.Verify(context.Background(), token, "/markets/all", modifiedQueryString)
+		assert.Equal(t, "", userUUID)
+		assert.Error(t, err)
 		repo.AssertExpectations(t)
 	})
 	t.Run("It returns error if secret key is not equal", func(t *testing.T) {
@@ -66,11 +82,7 @@ func TestService_Verify(t *testing.T) {
 		secretKey := uuid.NewString()
 		secretKey2 := uuid.NewString()
 
-		payload := models.Payload{
-			AccessKey: accessKey,
-			Nonce:     uuid.NewString(),
-			Signature: "1",
-		}
+		payload, err := models.NewPayload(accessKey, uuid.NewString(), queryString)
 		token, err := payload.Encrypt(secretKey)
 		assert.NoError(t, err)
 
@@ -89,7 +101,7 @@ func TestService_Verify(t *testing.T) {
 
 		service := NewService(repo)
 
-		userUUID, err := service.Verify(context.Background(), token, expectedPattern, "1")
+		userUUID, err := service.Verify(context.Background(), token, expectedPattern, queryString)
 		assert.Equal(t, "", userUUID)
 		assert.Error(t, err)
 		repo.AssertExpectations(t)
@@ -98,11 +110,7 @@ func TestService_Verify(t *testing.T) {
 		accessKey := uuid.NewString()
 		secretKey := uuid.NewString()
 
-		payload := models.Payload{
-			AccessKey: accessKey,
-			Nonce:     uuid.NewString(),
-			Signature: "1",
-		}
+		payload, err := models.NewPayload(accessKey, uuid.NewString(), queryString)
 		token, err := payload.Encrypt(secretKey)
 		assert.NoError(t, err)
 
@@ -126,7 +134,7 @@ func TestService_Verify(t *testing.T) {
 
 		service := NewService(repo)
 
-		userUUID, err := service.Verify(context.Background(), token, expectedPattern, "1")
+		userUUID, err := service.Verify(context.Background(), token, expectedPattern, queryString)
 		assert.Equal(t, "", userUUID)
 		assert.Error(t, err)
 		repo.AssertExpectations(t)
@@ -135,11 +143,7 @@ func TestService_Verify(t *testing.T) {
 		accessKey := uuid.NewString()
 		secretKey := uuid.NewString()
 
-		payload := models.Payload{
-			AccessKey: accessKey,
-			Nonce:     uuid.NewString(),
-			Signature: "1",
-		}
+		payload, err := models.NewPayload(accessKey, uuid.NewString(), queryString)
 		token, err := payload.Encrypt(secretKey)
 		assert.NoError(t, err)
 
@@ -163,7 +167,7 @@ func TestService_Verify(t *testing.T) {
 
 		service := NewService(repo)
 
-		userUUID, err := service.Verify(context.Background(), token, "/markets/all", "1")
+		userUUID, err := service.Verify(context.Background(), token, "/markets/all", queryString)
 		assert.Equal(t, "", userUUID)
 		assert.Error(t, err)
 		repo.AssertExpectations(t)

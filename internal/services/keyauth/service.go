@@ -18,21 +18,25 @@ type serviceRepo interface {
 	RefreshPathPermissions(ctx context.Context) error
 }
 
+// Service is implementation of keyauth service
 type Service struct {
 	repo serviceRepo
 }
 
+// NewService creates keyauth service
 func NewService(repo serviceRepo) *Service {
 	return &Service{
 		repo: repo,
 	}
 }
 
+// Initialize preset for service
 func (s *Service) Initialize(ctx context.Context) error {
 	return s.repo.RefreshPathPermissions(ctx)
 }
 
-func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) (string, error) {
+// Verify JWT(JWS) token and returns user uuid
+func (s *Service) Verify(ctx context.Context, token, urlPath, queryString string) (string, error) {
 	signed, err := jose.ParseSigned(token)
 	if err != nil {
 		return "", err
@@ -45,14 +49,14 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) (
 		return "", err
 	}
 
+	if err := payload.Validate(queryString); err != nil {
+		return "", err
+	}
+
 	authKey, err := s.repo.AuthKey(ctx, payload.AccessKey)
 	if err != nil {
 		return "", err
 	}
-
-	log.Printf("signed: ========= %v, %s", signed.Signatures, signed.FullSerialize())
-
-	// TODO: Validate query with signature
 
 	_, err = signed.Verify([]byte(authKey.SecretKey))
 	if err != nil {
