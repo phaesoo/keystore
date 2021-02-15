@@ -1,5 +1,6 @@
 package models
 
+// AuthKey contains API Key base user auth info
 type AuthKey struct {
 	ID        int    `json:"id"`
 	AccessKey string `json:"access_key"`
