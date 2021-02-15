@@ -47,32 +47,36 @@ func (s *ServiceTestSuite) TestVerify() {
 func TestService_Verify(t *testing.T) {
 	tokenString := "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiMTIzIiwibm9uY2UiOiI1ODA5YWVhYS0yZDhjLTQyZmEtOTk5Yi1iOTdmNjBhNTQ5YjQifQ.B3IYg6VvANcPjdKJZRlOrR2tFH2snpIA0pTYEiyFVuI"
 
-	repo := mockrepo.NewMockRepo()
-	repo.On("AuthKey", mock.Anything, mock.Anything).Return(
-		models.AuthKey{
+	t.Run("", func(t *testing.T) {
+		repo := mockrepo.NewMockRepo()
+
+		expectedAuthKey := models.AuthKey{
 			ID:        1,
 			AccessKey: "123",
 			SecretKey: "456",
 			UserUUID:  "uuid-1",
-		},
-		nil,
-	)
-	repo.On("PathPermissionIDs", mock.Anything, mock.Anything).Return(
-		[]int{1},
-		nil,
-	)
+		}
+		repo.On("AuthKey", mock.Anything, mock.Anything).Return(
+			expectedAuthKey,
+			nil,
+		)
 
-	repo.On("PathPermission", mock.Anything, mock.Anything).Return(
-		models.PathPermission{
-			ID:          1,
-			PathPattern: "/markets/all",
-		},
-		nil,
-	)
+		expectedPathPermissionIDs := []int{1}
+		repo.On("PathPermissionIDs", mock.Anything, expectedAuthKey.AccessKey).Return(
+			expectedPathPermissionIDs,
+			nil,
+		)
 
-	service := NewService(repo)
+		repo.On("PathPermission", mock.Anything, expectedPathPermissionIDs[0]).Return(
+			models.PathPermission{
+				ID:          expectedPathPermissionIDs[0],
+				PathPattern: "/markets/all",
+			},
+			nil,
+		)
 
-	t.Run("", func(t *testing.T) {
+		service := NewService(repo)
+
 		userUUID, err := service.Verify(context.Background(), tokenString, "/markets/all", "1")
 		assert.Equal(t, "uuid-1", userUUID)
 		assert.NoError(t, err)

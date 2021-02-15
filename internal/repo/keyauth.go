@@ -11,7 +11,7 @@ type keyauthRepo interface {
 	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
 	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
 	RefreshPathPermissions(ctx context.Context) error
-	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
+	PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error)
 }
 
 func (r *repo) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
@@ -45,19 +45,19 @@ func (r *repo) RefreshPathPermissions(ctx context.Context) error {
 	return r.cache.RefreshPathPermissions(ctx, perms)
 }
 
-func (r *repo) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
+func (r *repo) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
 	var permIDs []int
 	var err error
-	permIDs, err = r.cache.PathPermissionIDs(ctx, keyID)
+	permIDs, err = r.cache.PathPermissionIDs(ctx, accessKey)
 	if err != nil {
 		if err != cache.ErrNotFound {
 			return permIDs, err
 		}
-		permIDs, err = r.db.PathPermissionIDs(ctx, keyID)
+		permIDs, err = r.db.PathPermissionIDs(ctx, accessKey)
 		if err != nil {
 			return permIDs, err
 		}
-		if err := r.cache.SetPathPermissionIDs(ctx, keyID, permIDs); err != nil {
+		if err := r.cache.SetPathPermissionIDs(ctx, accessKey, permIDs); err != nil {
 			return permIDs, err
 		}
 	}

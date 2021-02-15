@@ -78,12 +78,12 @@ func (c *Cache) RefreshPathPermissions(ctx context.Context, perms []models.PathP
 	return nil
 }
 
-func (c *Cache) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
+func (c *Cache) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
 	conn := c.pool.Get()
 	defer conn.Close()
 
 	var permIDs []int
-	permIDs, err := redis.Ints(conn.Do("LRANGE", keyID, 0, -1))
+	permIDs, err := redis.Ints(conn.Do("LRANGE", accessKey, 0, -1))
 	if err == redis.ErrNil {
 		return permIDs, ErrNotFound
 	} else if err != nil {
@@ -92,11 +92,11 @@ func (c *Cache) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
 	return permIDs, nil
 }
 
-func (c *Cache) SetPathPermissionIDs(ctx context.Context, keyID int, permIDs []int) error {
+func (c *Cache) SetPathPermissionIDs(ctx context.Context, accessKey string, permIDs []int) error {
 	conn := c.pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("LPUSH", keyID, permIDs)
+	_, err := conn.Do("LPUSH", accessKey, permIDs)
 	if err != nil {
 		return errors.Wrap(err, "Set path permission IDs")
 	}

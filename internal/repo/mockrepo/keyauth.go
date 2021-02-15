@@ -21,7 +21,7 @@ func (m *MockRepo) RefreshPathPermissions(ctx context.Context) error {
 	return args.Error(0)
 }
 
-func (m *MockRepo) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
-	args := m.MethodCalled("PathPermissionIDs", ctx, keyID)
+func (m *MockRepo) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
+	args := m.MethodCalled("PathPermissionIDs", ctx, accessKey)
 	return args.Get(0).([]int), args.Error(1)
 }

@@ -14,7 +14,7 @@ import (
 type serviceRepo interface {
 	AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error)
 	PathPermission(ctx context.Context, id int) (models.PathPermission, error)
-	PathPermissionIDs(ctx context.Context, keyID int) ([]int, error)
+	PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error)
 	RefreshPathPermissions(ctx context.Context) error
 }
 
@@ -58,7 +58,7 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) (
 		return "", err
 	}
 
-	permIDs, err := s.repo.PathPermissionIDs(ctx, authKey.ID)
+	permIDs, err := s.repo.PathPermissionIDs(ctx, authKey.AccessKey)
 	if err != nil {
 		return "", err
 	}

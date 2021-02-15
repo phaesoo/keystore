@@ -56,14 +56,14 @@ func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, err
 	return perms, nil
 }
 
-func (db *DB) PathPermissionIDs(ctx context.Context, keyID int) ([]int, error) {
+func (db *DB) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
 	var output []int
 	if err := db.conn.Select(&output, fmt.Sprintf(`
 		SELECT B.permission_id
 		FROM auth_key A
 		JOIN auth_key_path_permissions B on A.id = B.key_id
-		WHERE A.id = %d
-		`, keyID)); err != nil {
+		WHERE A.access_key = %s
+		`, accessKey)); err != nil {
 		return output, err
 	}
 	return output, nil
