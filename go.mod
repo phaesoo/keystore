@@ -7,6 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobwas/glob v0.2.3
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/google/uuid v1.2.0
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/pkg/errors v0.9.1
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible

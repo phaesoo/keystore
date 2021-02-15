@@ -50,6 +50,8 @@ func (s *Service) Verify(ctx context.Context, token, urlPath, rawQuery string) (
 		return "", err
 	}
 
+	log.Printf("signed: ========= %v, %s", signed.Signatures, signed.FullSerialize())
+
 	// TODO: Validate query with signature
 
 	_, err = signed.Verify([]byte(authKey.SecretKey))
