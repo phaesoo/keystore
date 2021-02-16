@@ -13,6 +13,10 @@ const (
 	pathPermissionHash = "path-permissions"
 )
 
+func authKeyHash(accessKey string) string {
+	return authKeyHashPrefix + accessKey
+}
+
 func (c *Cache) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
 	conn := c.pool.Get()
 	defer conn.Close()
@@ -41,10 +45,6 @@ func (c *Cache) SetAuthKey(ctx context.Context, authKey models.AuthKey) error {
 		return err
 	}
 	return nil
-}
-
-func authKeyHash(accessKey string) string {
-	return authKeyHashPrefix + accessKey
 }
 
 func (c *Cache) PathPermission(ctx context.Context, id int) (models.PathPermission, error) {
