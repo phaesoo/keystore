@@ -20,6 +20,22 @@ build-docker:
 test: main
 	go test -short ./...
 
+# Run all benchmarks
+.PHONY: bench
+bench:
+	go test -short -bench=. ./...
+
+# test with coverage turned on
+.PHONY: cover
+cover:
+	go test -short -cover -covermode=atomic ./...
+
+# integration test with coverage and the race detector turned on
+.PHONY: test-ci
+test-ci:
+	# go run db/migrate/main.go -t=true
+	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
 # Migrate database
 .PHONY: migrate
 migrate:

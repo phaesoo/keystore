@@ -3,6 +3,7 @@ module github.com/phaesoo/shield
 go 1.15
 
 require (
+	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobwas/glob v0.2.3

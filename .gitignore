@@ -18,3 +18,4 @@ vendor/
 db/mysql/data
 db/redis/data
 main
+coverage.txt
