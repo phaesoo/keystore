@@ -38,7 +38,7 @@ func (r *repo) PathPermission(ctx context.Context, id int) (models.PathPermissio
 }
 
 func (r *repo) RefreshPathPermissions(ctx context.Context) error {
-	perms, err := r.db.PathPermissions(ctx)
+	perms, err := r.db.PathPermissions()
 	if err != nil {
 		return err
 	}

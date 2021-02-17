@@ -1,10 +1,10 @@
 package db
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/phaesoo/shield/internal/models"
+	"github.com/pkg/errors"
 )
 
 func (db *DB) AuthKey(accessKey string) (models.AuthKey, error) {
@@ -39,10 +39,10 @@ func (db *DB) SetAuthKey(authKey models.AuthKey) error {
 	return err
 }
 
-func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, error) {
+func (db *DB) PathPermissions() ([]models.PathPermission, error) {
 	perms := []models.PathPermission{}
 
-	rows, err := db.conn.Queryx(`SELECT id, path_pattern FROM path_permission`)
+	rows, err := db.conn.Queryx(`SELECT id, path_pattern FROM path_permission order by id`)
 	if err != nil {
 		return perms, err
 	}
@@ -62,6 +62,11 @@ func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, err
 			PathPattern: perm.PathPattern,
 		})
 	}
+
+	if len(perms) == 0 {
+		return perms, errors.New("Empty result for PathPermissions")
+	}
+
 	return perms, nil
 }
 

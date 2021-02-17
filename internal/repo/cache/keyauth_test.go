@@ -90,8 +90,7 @@ func (ts *KeyAuthTestSuite) Test_SetPathPermissionIDs() {
 	var accessKey string
 	ts.NoError(faker.FakeData(&accessKey))
 
-	var permIDs []int
-	ts.NoError(faker.FakeData(&permIDs))
+	permIDs := []int{1, 2, 3, 4, 5}
 
 	err := ts.cache.SetPathPermissionIDs(accessKey, permIDs)
 	ts.NoError(err)
@@ -101,8 +100,7 @@ func (ts *KeyAuthTestSuite) Test_PathPermissionIDs() {
 	var accessKey string
 	ts.NoError(faker.FakeData(&accessKey))
 
-	var permIDs []int
-	ts.NoError(faker.FakeData(&permIDs))
+	permIDs := []int{1, 2, 3, 4, 5}
 
 	err := ts.cache.SetPathPermissionIDs(accessKey, permIDs)
 	ts.NoError(err)
