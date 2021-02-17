@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"context"
-
 	"github.com/gomodule/redigo/redis"
 	"github.com/phaesoo/shield/internal/models"
 	"github.com/pkg/errors"
@@ -17,7 +15,7 @@ func authKeyHash(accessKey string) string {
 	return authKeyHashPrefix + accessKey
 }
 
-func (c *Cache) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
+func (c *Cache) AuthKey(accessKey string) (models.AuthKey, error) {
 	conn := c.pool.Get()
 	defer conn.Close()
 
@@ -36,7 +34,7 @@ func (c *Cache) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, 
 	return authKey, nil
 }
 
-func (c *Cache) SetAuthKey(ctx context.Context, authKey models.AuthKey) error {
+func (c *Cache) SetAuthKey(authKey models.AuthKey) error {
 	conn := c.pool.Get()
 	defer conn.Close()
 
@@ -47,7 +45,7 @@ func (c *Cache) SetAuthKey(ctx context.Context, authKey models.AuthKey) error {
 	return nil
 }
 
-func (c *Cache) PathPermission(ctx context.Context, id int) (models.PathPermission, error) {
+func (c *Cache) PathPermission(id int) (models.PathPermission, error) {
 	conn := c.pool.Get()
 	defer conn.Close()
 
@@ -61,7 +59,7 @@ func (c *Cache) PathPermission(ctx context.Context, id int) (models.PathPermissi
 	return models.PathPermission{ID: id, PathPattern: pathPattern}, nil
 }
 
-func (c *Cache) RefreshPathPermissions(ctx context.Context, perms []models.PathPermission) error {
+func (c *Cache) RefreshPathPermissions(perms []models.PathPermission) error {
 	conn := c.pool.Get()
 	defer conn.Close()
 
@@ -78,7 +76,7 @@ func (c *Cache) RefreshPathPermissions(ctx context.Context, perms []models.PathP
 	return nil
 }
 
-func (c *Cache) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
+func (c *Cache) PathPermissionIDs(accessKey string) ([]int, error) {
 	conn := c.pool.Get()
 	defer conn.Close()
 
@@ -92,7 +90,7 @@ func (c *Cache) PathPermissionIDs(ctx context.Context, accessKey string) ([]int,
 	return permIDs, nil
 }
 
-func (c *Cache) SetPathPermissionIDs(ctx context.Context, accessKey string, permIDs []int) error {
+func (c *Cache) SetPathPermissionIDs(accessKey string, permIDs []int) error {
 	conn := c.pool.Get()
 	defer conn.Close()
 

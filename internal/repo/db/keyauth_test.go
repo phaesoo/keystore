@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
@@ -28,9 +27,53 @@ func (ts *KeyAuthTestSuite) SetupSuite() {
 }
 
 func (ts *KeyAuthTestSuite) Test_SetAuthKey() {
-	authKey := models.AuthKey{}
+	var authKey models.AuthKey
 	ts.NoError(faker.FakeData(&authKey))
 
-	err := ts.db.SetAuthKey(context.Background(), authKey)
+	err := ts.db.SetAuthKey(authKey)
 	ts.NoError(err)
+}
+
+func (ts *KeyAuthTestSuite) Test_AuthKey() {
+	var authKey models.AuthKey
+	ts.NoError(faker.FakeData(&authKey))
+
+	err := ts.db.SetAuthKey(authKey)
+	ts.NoError(err)
+
+	ts.Run("It returns expected object", func() {
+		res, err := ts.db.AuthKey(authKey.AccessKey)
+		ts.NoError(err)
+		ts.EqualValues(authKey, res)
+	})
+	ts.Run("It returns error with unknown access key", func() {
+		var accessKey string
+		ts.NoError(faker.FakeData(&accessKey))
+
+		res, err := ts.db.AuthKey(accessKey)
+		ts.Error(err)
+		ts.EqualValues(models.AuthKey{}, res)
+	})
+}
+
+func (ts *KeyAuthTestSuite) Test_PathPermissions() {
+	var authKey models.AuthKey
+	ts.NoError(faker.FakeData(&authKey))
+
+	err := ts.db.SetAuthKey(authKey)
+	ts.NoError(err)
+
+	ts.Run("It returns expected object", func() {
+		res, err := ts.db.AuthKey(authKey.AccessKey)
+		ts.NoError(err)
+		ts.EqualValues(authKey, res)
+	})
+	ts.Run("It returns error with unknown access key", func() {
+		var accessKey string
+		ts.NoError(faker.FakeData(&accessKey))
+
+		res, err := ts.db.AuthKey(accessKey)
+		ts.Error(err)
+		ts.EqualValues(models.AuthKey{}, res)
+	})
 }

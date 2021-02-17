@@ -7,7 +7,7 @@ import (
 	"github.com/phaesoo/shield/internal/models"
 )
 
-func (db *DB) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
+func (db *DB) AuthKey(accessKey string) (models.AuthKey, error) {
 	k := struct {
 		ID        int    `db:"id"`
 		AccessKey string `db:"access_key"`
@@ -15,11 +15,11 @@ func (db *DB) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, er
 		UserUUID  string `db:"user_uuid"`
 	}{}
 
-	if err := db.conn.Get(&k, fmt.Sprintf(`
+	if err := db.conn.Get(&k, `
 		SELECT *
 		FROM auth_key
-		WHERE access_key = %s
-		`, accessKey)); err != nil {
+		WHERE access_key = ?
+		`, accessKey); err != nil {
 		return models.AuthKey{}, err
 	}
 
@@ -31,7 +31,7 @@ func (db *DB) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, er
 	}, nil
 }
 
-func (db *DB) SetAuthKey(ctx context.Context, authKey models.AuthKey) error {
+func (db *DB) SetAuthKey(authKey models.AuthKey) error {
 	_, err := db.conn.Exec(`
 	INSERT INTO auth_key (id, access_key, secret_key, user_uuid)
 	VALUES (?, ?, ?, ?)
@@ -65,7 +65,7 @@ func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, err
 	return perms, nil
 }
 
-func (db *DB) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
+func (db *DB) PathPermissionIDs(accessKey string) ([]int, error) {
 	var output []int
 	if err := db.conn.Select(&output, fmt.Sprintf(`
 		SELECT B.permission_id

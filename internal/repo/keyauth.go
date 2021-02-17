@@ -17,16 +17,16 @@ type keyauthRepo interface {
 func (r *repo) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, error) {
 	var authKey models.AuthKey
 	var err error
-	authKey, err = r.cache.AuthKey(ctx, accessKey)
+	authKey, err = r.cache.AuthKey(accessKey)
 	if err != nil {
 		if err != cache.ErrNotFound {
 			return authKey, err
 		}
-		authKey, err = r.db.AuthKey(ctx, accessKey)
+		authKey, err = r.db.AuthKey(accessKey)
 		if err != nil {
 			return authKey, err
 		}
-		if err := r.cache.SetAuthKey(ctx, authKey); err != nil {
+		if err := r.cache.SetAuthKey(authKey); err != nil {
 			return authKey, err
 		}
 	}
@@ -34,7 +34,7 @@ func (r *repo) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, e
 }
 
 func (r *repo) PathPermission(ctx context.Context, id int) (models.PathPermission, error) {
-	return r.cache.PathPermission(ctx, id)
+	return r.cache.PathPermission(id)
 }
 
 func (r *repo) RefreshPathPermissions(ctx context.Context) error {
@@ -42,22 +42,22 @@ func (r *repo) RefreshPathPermissions(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return r.cache.RefreshPathPermissions(ctx, perms)
+	return r.cache.RefreshPathPermissions(perms)
 }
 
 func (r *repo) PathPermissionIDs(ctx context.Context, accessKey string) ([]int, error) {
 	var permIDs []int
 	var err error
-	permIDs, err = r.cache.PathPermissionIDs(ctx, accessKey)
+	permIDs, err = r.cache.PathPermissionIDs(accessKey)
 	if err != nil {
 		if err != cache.ErrNotFound {
 			return permIDs, err
 		}
-		permIDs, err = r.db.PathPermissionIDs(ctx, accessKey)
+		permIDs, err = r.db.PathPermissionIDs(accessKey)
 		if err != nil {
 			return permIDs, err
 		}
-		if err := r.cache.SetPathPermissionIDs(ctx, accessKey, permIDs); err != nil {
+		if err := r.cache.SetPathPermissionIDs(accessKey, permIDs); err != nil {
 			return permIDs, err
 		}
 	}

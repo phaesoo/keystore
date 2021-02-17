@@ -24,6 +24,7 @@ func (s *TestSuite) SetupSuite() {
 }
 
 func (s *TestSuite) TearDownSuite() {
-	s.Conn.Close()
-	s.Pool.Close()
+	s.NoError(s.Conn.Flush())
+	s.NoError(s.Conn.Close())
+	s.NoError(s.Pool.Close())
 }

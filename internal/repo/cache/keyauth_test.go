@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"context"
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
@@ -40,21 +39,21 @@ func (ts *KeyAuthTestSuite) SetupSuite() {
 }
 
 func (ts *KeyAuthTestSuite) Test_SetAuthKey() {
-	authKey := models.AuthKey{}
+	var authKey models.AuthKey
 	ts.NoError(faker.FakeData(&authKey))
 
-	err := ts.cache.SetAuthKey(context.Background(), authKey)
+	err := ts.cache.SetAuthKey(authKey)
 	ts.NoError(err)
 }
 
 func (ts *KeyAuthTestSuite) Test_GetAuthKey() {
-	authKey := models.AuthKey{}
+	var authKey models.AuthKey
 	ts.NoError(faker.FakeData(&authKey))
 
-	err := ts.cache.SetAuthKey(context.Background(), authKey)
+	err := ts.cache.SetAuthKey(authKey)
 	ts.NoError(err)
 
-	res, err := ts.cache.AuthKey(context.Background(), authKey.AccessKey)
+	res, err := ts.cache.AuthKey(authKey.AccessKey)
 	ts.NoError(err)
 	ts.EqualValues(authKey, res)
 }
@@ -66,7 +65,7 @@ func (ts *KeyAuthTestSuite) Test_RefreshPathPermissions() {
 		faker.FakeData(&perms[i].PathPattern)
 	}
 
-	err := ts.cache.RefreshPathPermissions(context.Background(), perms)
+	err := ts.cache.RefreshPathPermissions(perms)
 	ts.NoError(err)
 }
 
@@ -77,11 +76,11 @@ func (ts *KeyAuthTestSuite) Test_PathPermission() {
 		faker.FakeData(&perms[i].PathPattern)
 	}
 
-	err := ts.cache.RefreshPathPermissions(context.Background(), perms)
+	err := ts.cache.RefreshPathPermissions(perms)
 	ts.NoError(err)
 
 	for _, p := range perms {
-		res, err := ts.cache.PathPermission(context.Background(), p.ID)
+		res, err := ts.cache.PathPermission(p.ID)
 		ts.NoError(err)
 		ts.EqualValues(p, res)
 	}
@@ -94,7 +93,7 @@ func (ts *KeyAuthTestSuite) Test_SetPathPermissionIDs() {
 	var permIDs []int
 	ts.NoError(faker.FakeData(&permIDs))
 
-	err := ts.cache.SetPathPermissionIDs(context.Background(), accessKey, permIDs)
+	err := ts.cache.SetPathPermissionIDs(accessKey, permIDs)
 	ts.NoError(err)
 }
 
@@ -105,10 +104,10 @@ func (ts *KeyAuthTestSuite) Test_PathPermissionIDs() {
 	var permIDs []int
 	ts.NoError(faker.FakeData(&permIDs))
 
-	err := ts.cache.SetPathPermissionIDs(context.Background(), accessKey, permIDs)
+	err := ts.cache.SetPathPermissionIDs(accessKey, permIDs)
 	ts.NoError(err)
 
-	res, err := ts.cache.PathPermissionIDs(context.Background(), accessKey)
+	res, err := ts.cache.PathPermissionIDs(accessKey)
 	ts.NoError(err)
 	ts.EqualValues(permIDs, res)
 }

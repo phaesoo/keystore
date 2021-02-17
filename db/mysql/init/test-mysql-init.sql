@@ -9,7 +9,7 @@ CREATE TABLE `auth_key` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `access_key` VARCHAR(63) UNIQUE,
     `secret_key` VARCHAR(63) UNIQUE,
-    `user_uuid` VARCHAR(32) UNIQUE
+    `user_uuid` VARCHAR(36) UNIQUE
 ) ENGINE=INNODB;
 
 
