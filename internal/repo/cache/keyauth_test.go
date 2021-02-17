@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
@@ -84,7 +83,32 @@ func (ts *KeyAuthTestSuite) Test_PathPermission() {
 	for _, p := range perms {
 		res, err := ts.cache.PathPermission(context.Background(), p.ID)
 		ts.NoError(err)
-		log.Printf("%v %v", p, res)
 		ts.EqualValues(p, res)
 	}
+}
+
+func (ts *KeyAuthTestSuite) Test_SetPathPermissionIDs() {
+	var accessKey string
+	ts.NoError(faker.FakeData(&accessKey))
+
+	var permIDs []int
+	ts.NoError(faker.FakeData(&permIDs))
+
+	err := ts.cache.SetPathPermissionIDs(context.Background(), accessKey, permIDs)
+	ts.NoError(err)
+}
+
+func (ts *KeyAuthTestSuite) Test_PathPermissionIDs() {
+	var accessKey string
+	ts.NoError(faker.FakeData(&accessKey))
+
+	var permIDs []int
+	ts.NoError(faker.FakeData(&permIDs))
+
+	err := ts.cache.SetPathPermissionIDs(context.Background(), accessKey, permIDs)
+	ts.NoError(err)
+
+	res, err := ts.cache.PathPermissionIDs(context.Background(), accessKey)
+	ts.NoError(err)
+	ts.EqualValues(permIDs, res)
 }

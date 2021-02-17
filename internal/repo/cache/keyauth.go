@@ -96,7 +96,7 @@ func (c *Cache) SetPathPermissionIDs(ctx context.Context, accessKey string, perm
 	conn := c.pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("LPUSH", accessKey, permIDs)
+	_, err := conn.Do("RPUSH", redis.Args{}.Add(accessKey).AddFlat(permIDs)...)
 	if err != nil {
 		return errors.Wrap(err, "Set path permission IDs")
 	}
