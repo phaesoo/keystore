@@ -1,10 +1,10 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/phaesoo/shield/internal/models"
-	"github.com/pkg/errors"
 )
 
 func (db *DB) AuthKey(accessKey string) (models.AuthKey, error) {
