@@ -30,6 +30,15 @@ func (db *DB) AuthKey(ctx context.Context, accessKey string) (models.AuthKey, er
 		UserUUID:  k.UserUUID,
 	}, nil
 }
+
+func (db *DB) SetAuthKey(ctx context.Context, authKey models.AuthKey) error {
+	_, err := db.conn.Exec(`
+	INSERT INTO auth_key (id, access_key, secret_key, user_uuid)
+	VALUES (?, ?, ?, ?)
+	`, authKey.ID, authKey.AccessKey, authKey.SecretKey, authKey.UserUUID)
+	return err
+}
+
 func (db *DB) PathPermissions(ctx context.Context) ([]models.PathPermission, error) {
 	perms := []models.PathPermission{}
 

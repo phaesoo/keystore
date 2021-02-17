@@ -18,8 +18,10 @@ type DB = sqlx.DB
 
 // NewDB returns connected Client
 func NewDB(driverName, dsn string) (*DB, error) {
-	for i := 1; i <= retryCount; i++ {
-		conn, err := sqlx.Connect(driverName, dsn)
+	var conn *sqlx.DB
+	var err error
+	for i := 0; i < retryCount; i++ {
+		conn, err = sqlx.Connect(driverName, dsn)
 		if err != nil {
 			log.Print(err)
 			time.Sleep(time.Second)
@@ -28,7 +30,7 @@ func NewDB(driverName, dsn string) (*DB, error) {
 		return conn, nil
 	}
 	log.Print(dsn)
-	return nil, errors.New("DB connect")
+	return nil, errors.Wrap(err, "DB connect")
 }
 
 // DSN returns data source name for connection
