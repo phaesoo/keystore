@@ -10,10 +10,11 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/jmoiron/sqlx v1.3.1
+	github.com/phaesoo/sqlx-migrate v0.0.3
 	github.com/pkg/errors v0.9.1
 	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/spf13/viper v1.7.1
 	github.com/square/go-jose v2.5.1+incompatible
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 )
