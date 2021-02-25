@@ -33,7 +33,7 @@ cover:
 # integration test with coverage and the race detector turned on
 .PHONY: test-ci
 test-ci:
-	# go run db/migrate/main.go -t=true
+	go run db/migrate/main.go -t=true
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 # Migrate database

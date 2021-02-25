@@ -5,7 +5,7 @@ import (
 	migrate "github.com/phaesoo/sqlx-migrate"
 )
 
-var temp = migrate.Migration{
+var InitTables = migrate.Migration{
 	ID:   "20210220220000",
 	Name: "init db",
 	Migrate: func(tx *sqlx.Tx) error {
@@ -43,8 +43,6 @@ var temp = migrate.Migration{
 		return nil
 	},
 	Rollback: func(tx *sqlx.Tx) error {
-		tx.MustExec("SET FOREIGN_KEY_CHECKS=0;")
-
 		if _, err := tx.Exec("SET FOREIGN_KEY_CHECKS=0;"); err != nil {
 			return err
 		}
@@ -68,7 +66,6 @@ var temp = migrate.Migration{
 		if _, err := tx.Exec("SET FOREIGN_KEY_CHECKS=1;"); err != nil {
 			return err
 		}
-
 		return nil
 	},
 }

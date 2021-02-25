@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/phaesoo/shield/configs"
+	"github.com/phaesoo/shield/db/migrate/migrations"
 	"github.com/phaesoo/shield/pkg/db"
+	migrate "github.com/phaesoo/sqlx-migrate"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -27,21 +30,19 @@ func main() {
 		panic(err)
 	}
 
+	// Patch config if test
 	if test {
 		database := "shield_test"
+		conf.Database = database
 
-		_, err := conn.Exec("DROP DATABASE IF EXISTS ?", database)
+		_, err := conn.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", database))
 		if err != nil {
-			log.Fatalf("unable to drop DB `%s`", database)
+			log.Fatalf("unable to drop DB `%s`: %s", database, err.Error())
 		}
-
-		_, err = conn.Exec("CREATE DATABASE ?", database)
+		_, err = conn.Exec(fmt.Sprintf("CREATE DATABASE %s", database))
 		if err != nil {
 			log.Fatalf("unable to create DB `%s`", database)
 		}
-
-		// Patch config with test database
-		conf.Database = database
 
 		conn, err = db.NewDB("mysql", conf.DSN())
 		defer conn.Close()
@@ -50,4 +51,14 @@ func main() {
 		}
 	}
 
+	m := migrate.New(conn, []migrate.Migration{
+		migrations.InitTables,
+	})
+	if err := m.Migrate(); err != nil {
+		log.Printf("Migration failed: %s", err.Error())
+		if err := m.Rollback(); err != nil {
+			log.Printf("Failed to rollback last migration: %s", err.Error())
+		}
+		log.Printf("Success to rollback last migration")
+	}
 }
