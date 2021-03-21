@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/phaesoo/shield/internal/request"
 	"github.com/phaesoo/shield/internal/resp"
 )
 
@@ -34,13 +33,6 @@ func (s *Server) HandleTokenVerify(w http.ResponseWriter, r *http.Request) {
 		resp.BadRequest(w, resp.CodeInvalidRequest)
 		return
 	}
-
-	params := struct{
-		URLPath
-	 }
-
-
-	request.BindJSON(r, )
 
 	log.Print("HandlePostVerify called")
 
